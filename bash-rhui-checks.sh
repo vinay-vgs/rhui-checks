@@ -266,33 +266,36 @@ platform_related_repo_checks() {
 }
 
 http_error_checks() {
-    echo "######################## HTTP error check in yum output ########################"
+    echo -e "\n######################## HTTP error check in yum output ########################"
     yum repolist &> /tmp/rhui-temp 
 
-    if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep certificate;
-    then
-        echo "This can happen with an outdated google-rhui-client-rhelX or google-rhui-client-rhelX-sap* (X = RHEL version) package (containing outdated ssl certificates and keys required used to connect to rhui servers)."
-    fi
+    if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'; then
+        if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep certificate;
+        then
+            echo "This can happen with an outdated google-rhui-client-rhelX or google-rhui-client-rhelX-sap* (X = RHEL version) package (containing outdated ssl certificates and keys required used to connect to rhui servers)."
+        fi
 
-    if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep "404 - Not Found";
-    then
-        echo "The errors indicates a content mismatch between what you are asking for and what the RHUI contains."
-        echo "Please retry package install or update at different intervals."
-        echo "If issue still persists, Please reachout to GCP Support via a case/chat"
+        if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep "404 - Not Found";
+        then
+            echo "The errors indicates a content mismatch between what you are asking for and what the RHUI contains."
+            echo "Please retry package install or update at different intervals."
+            echo "If issue still persists, Please reachout to GCP Support via a case/chat"
 
-    fi
+        fi
 
-    if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep "403 - Forbidden";
-    then
-        echo "This issue can happen if the installed google-rhui-client is outdated and can be resolved by updating the rhui client package using yum."
-        echo -e "   sudo yum update --repo google-compute-engine google-rhui-client-rhel$os_major_version*"
-        echo "If issue still persists after updating the google-rhui-client to latest, Please reachout to GCP Support via a case/chat"
-    fi 
+        if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep "403 - Forbidden";
+        then
+            echo "This issue can happen if the installed google-rhui-client is outdated and can be resolved by updating the rhui client package using yum."
+            echo -e "   sudo yum update --repo google-compute-engine google-rhui-client-rhel$os_major_version*"
+            echo "If issue still persists after updating the google-rhui-client to latest, Please reachout to GCP Support via a case/chat"
+        fi
+    else
+        echo "No errors found in yum repolist output"
 }
 http_error_checks
 
 check_yum_set_var() {
-    echo "######################## check for releasever hardcoding ########################"
+    echo -e "\n######################## check for releasever hardcoding ########################"
     # check for Version hardcoding
     releasever_file_name=$(grep -r releasever /etc/yum.conf /etc/yum/vars/| awk -F":" '{print $1}')
     releasever=$(grep -r releasever /etc/yum.conf /etc/yum/vars/| awk -F":" '{print $NF}')
