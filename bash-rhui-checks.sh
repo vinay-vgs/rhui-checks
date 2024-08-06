@@ -27,6 +27,7 @@
 Metadata_URL="http://169.254.169.254"
 
 platform_get() {
+    echo -e "\n######################## Platform check ########################"
     if [ -n "$1" ]; then
         platform=`echo $1`
     else
@@ -242,7 +243,8 @@ check_rhui_client() {
 check_rhui_v4_baseurls() {
     echo -e "\n######################## RHUIv4 mirrorURLs endpoint check ########################"
     if cat /etc/yum.repos.d/rh-cloud.repo | grep -v "^#" | grep -q "cds.rhel.updates.googlecloud.com"; then
-        echo "You are still using RHUIv3 repo endpoints(https://cds.rhel.updates.googlecloud.com), which are now deprecated."
+        echo "You are still using RHUIv3 repo endpoints(https://cds.rhel.updates.googlecloud.com),"
+        echo "which are now deprecated."
         check_rhui_client
     elif cat /etc/yum.repos.d/rh-cloud.repo | grep -v "^#" | grep -q "rhui.googlecloud.com"; then
         echo "Your yum repos are configured with correct RHUI endpoints(https://rhui.googlecloud.com)"
@@ -256,7 +258,8 @@ rhui_v4_endpoint_connectivity_check() {
     then
         echo "Connectivity to RHUIv4 endpoints(https://rhui.googlecloud.com) is working fine."
     else
-        echo "Connectivity to RHUIv4 endpoints(https://rhui.googlecloud.com) is failing. Please work with your Network team to allow communication to https://rhui.googlecloud.com"
+        echo "Connectivity to RHUIv4 endpoints(https://rhui.googlecloud.com) is failing."
+        echo "Please work with your Network team to allow communication to https://rhui.googlecloud.com"
     fi
 }
 rhui_v4_endpoint_connectivity_check
@@ -272,22 +275,26 @@ http_error_checks() {
     if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'; then
         if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep certificate;
         then
-            echo "This can happen with an outdated google-rhui-client-rhelX or google-rhui-client-rhelX-sap* (X = RHEL version) package (containing outdated ssl certificates and keys required used to connect to rhui servers)."
+            echo "This can happen with an outdated google-rhui-client-rhelX or google-rhui-client-rhelX-sap*"
+            echo "(X = RHEL version) package (containing outdated ssl certificates and keys required used"
+            echo "to connect to rhui servers)."
         fi
 
         if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep "404 - Not Found";
         then
-            echo "The errors indicates a content mismatch between what you are asking for and what the RHUI contains."
-            echo "Please retry package install or update at different intervals."
+            echo "The errors indicates a content mismatch between what you are asking for and"
+            echo "what the RHUI contains. Please retry package install or update at different intervals."
             echo "If issue still persists, Please reachout to GCP Support via a case/chat"
 
         fi
 
         if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep "403 - Forbidden";
         then
-            echo "This issue can happen if the installed google-rhui-client is outdated and can be resolved by updating the rhui client package using yum."
-            echo -e "   sudo yum update --repo google-compute-engine google-rhui-client-rhel$os_major_version*"
-            echo "If issue still persists after updating the google-rhui-client to latest, Please reachout to GCP Support via a case/chat"
+            echo "This issue can happen if the installed google-rhui-client is outdated"
+            echo "and can be resolved by updating the rhui client package using yum."
+            echo -e "  sudo yum update --repo google-compute-engine google-rhui-client-rhel$os_major_version* \n"
+            echo "If issue still persists after updating the google-rhui-client to latest,"
+            echo "Please reachout to GCP Support via a case/chat"
         fi
     else
         echo "No errors found in yum repolist output"
@@ -303,7 +310,8 @@ check_yum_set_var() {
     if [ -n "$releasever" ];
     then
         echo "yum releasever has been set to $releasever in $releasever_file_name."
-        echo " This will restrict your instance to stay at same version until releasever config removed from the releasever_file_name"
+        echo "This will restrict your instance to stay at same version until releasever"
+        echo "config removed from the releasever_file_name"
     fi
 }
 check_yum_set_var
