@@ -65,8 +65,83 @@ licnese_check(){
         "2862452038400965874" )
             license=rhel-6-byol
             ;;
+        "4720191914037931587" )
+            license=rhel-6-byos
+            ;;
+
+        "1176308840663243801" )
+            license=rhel-6-els
+            ;;
+        "1000002" )
+            license=rhel-6-server
+            ;;
+
+        "4621277670514851623" )
+            license=rhel-7-byol
+            ;;
+        "1492188837615955530" )
+            license=rhel-7-byos
+            ;;
+
+        "4646774207868449156" )
+            license=rhel-7-els
+            ;;
+        "1000006" )
+            license=rhel-7-server
+            ;;
+
+        "8475125252192923229" )
+            license=rhel-8-byos
+            ;;
+
         "601259152637613565" )
             license=rhel-8-server
+            ;;
+        "3837518230911135854" )
+            license=rhel-9-byos
+            ;;
+
+        "7883559014960410759" )
+            license=rhel-9-server
+            ;;
+
+        "8555687517154622919" )
+            license=rhel-7-sap
+            ;;
+
+        "5955710252559838163" )
+            license=rhel-7-sap-apps
+            ;;
+
+        "996690525257673675" )
+            license=rhel-7-sap-hana
+            ;;
+
+        "1785892118823772022" )
+            license=rhel-7-sap-solutions
+            ;;
+
+        "5882583258875011738" )
+            license=rhel-7-sap-us
+            ;;
+
+        "1270685562947480748" )
+            license=rhel-8-sap
+            ;;
+
+        "489291035512960571" )
+            license=rhel-8-sap-byos
+            ;;
+
+        "8291906032809750558" )
+            license=rhel-9-sap
+            ;;
+
+        "6753525580035552782" )
+            license=rhel-9-sap-byos
+            ;;
+        * )
+            license=""
             ;;
 
     esac
@@ -117,17 +192,17 @@ check_license() {
                                      -H "Metadata-Flavor: Google")
         for i in $(echo "$licenses" | grep -oP '"id":"\K[^"]+');
         do
-            #licnese_check $i
+            licnese_check $i
             #echo "License $license detected "
             if [[ "$rhel_payg_licenses " =~ " $i " ]]; then
-                echo "RHEL PAYG License found. RHUI setup should work as expected"
+                echo "RHEL PAYG License $license found. RHUI setup should work as expected"
                 break
             elif [[ " $rhel_sap_payg_licenses" =~ " $i " ]]; then
-                echo "RHEL-SAP PAYG License found. RHUI setup should work as expected"
+                echo "RHEL-SAP PAYG License $license found. RHUI setup should work as expected"
                 break
             else
-                echo "RHEL PAYG License not found, RHUI will not work on this instance,\
-                                         unless you have your own RHEL Subscription"
+                echo "RHEL PAYG License not found, RHUI will not work on this instance,"
+                echo "unless you have your own RHEL Subscription"
             fi
         done
 
@@ -148,7 +223,8 @@ check_rhui_client() {
         if rpm -qa --changelog google-rhui-client-rhel$os_major_version*| grep -q RHUIv4; then
             echo "The RHUI client package $rhui_client_rpm"
         else
-            echo -e "Your RHUI client package $rhui_client_rpm is obsolete and not compatible with latest Redhat Update Infrastructure v4"
+            echo -e "Your RHUI client package $rhui_client_rpm is obsolete and not compatible"
+            echo " with latest Redhat Update Infrastructure v4"
             echo -e "Please plan to upgrade your google-rhui-client-rhel* package to latest one using command:"
             echo -e "   sudo yum update --repo google-compute-engine google-rhui-client-rhel$os_major_version*"
         fi
@@ -211,17 +287,11 @@ http_error_checks
 
 check_yum_set_var() {
     # check for Version hardcoding
-    releasever=$(grep -r releasever /etc/yum.conf /etc/yum/vars/| awk -F":" '{print$NF}')
+    releasever_file_name=$(grep -r releasever /etc/yum.conf /etc/yum/vars/| awk -F":" '{print $1}')
+    releasever=$(grep -r releasever /etc/yum.conf /etc/yum/vars/| awk -F":" '{print $NF}')
     if [ -n "$releasever" ];
     then
-        echo "yum releasever has been set to $releasever"
+        echo "yum releasever has been set to $releasever in $releasever_file_name "
     fi
 }
 check_yum_set_var
-
-
-
-echo $platform
-
-
-
