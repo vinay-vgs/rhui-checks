@@ -45,6 +45,7 @@ platform_get() {
 platform_get
 
 check_os_version() {
+    echo -e "\n######################## Checking OS release & version ########################"
     if cat /etc/redhat-release| grep -q "Red Hat" ; then
         os_version=$(awk -F'=' '$1 == "VERSION_ID" {print $2}' /etc/os-release)
         os_major_version=$(echo "${os_version%%.*}" | tr -d '"')
@@ -149,7 +150,7 @@ licnese_check(){
 }
 
 check_metadata_connectivity() {
-
+    echo -e "\n######################## GCE Metadata server connectivity check ########################"
     if [ "$1" == "GCP" ]; then
         if curl -s "$Metadata_URL/computeMetadata/v1/instance/" \
                     -H "Metadata-Flavor: Google" | grep -q zone; then 
@@ -181,6 +182,7 @@ check_metadata_connectivity() {
 check_metadata_connectivity $platform
 
 check_license() {
+    echo -e "\n######################## PayG License check ########################"
     if [ "$1" == "GCP" ]; then
         rhel_payg_licenses=" 1176308840663243801 1000002 4646774207868449156 \
                 1000006 601259152637613565 7883559014960410759 "
@@ -217,6 +219,7 @@ check_license() {
 check_license $platform
 
 check_rhui_client() {
+    echo -e "\n######################## RHUI package check ########################"
     rhui_client_rpm=$(rpm -qa google-rhui-client-rhel$os_major_version*)
     if [ -n "$rhui_client_rpm" ]; then
         rhui_client_rpm=${rhui_client_rpm%.noarch}
@@ -237,6 +240,7 @@ check_rhui_client() {
 #check_rhui_client
 
 check_rhui_v4_baseurls() {
+    echo -e "\n######################## RHUIv4 mirrorURLs endpoint check ########################"
     if cat /etc/yum.repos.d/rh-cloud.repo | grep -v "^#" | grep -q "cds.rhel.updates.googlecloud.com"; then
         echo "You are still using RHUIv3 repo endpoints(https://cds.rhel.updates.googlecloud.com), which are now deprecated."
         check_rhui_client
@@ -247,6 +251,7 @@ check_rhui_v4_baseurls() {
 check_rhui_v4_baseurls
 
 rhui_v4_endpoint_connectivity_check() {
+    echo -e "\n######################## RHUIv4 endpoint connectivity check ########################"
     if curl -s https://rhui.googlecloud.com | grep -q "Red Hat"; 
     then
         echo "Connectivity to RHUIv4 endpoints(https://rhui.googlecloud.com) is working fine."
@@ -261,6 +266,7 @@ platform_related_repo_checks() {
 }
 
 http_error_checks() {
+    echo "######################## HTTP error check in yum output ########################"
     yum repolist &> /tmp/rhui-temp 
 
     if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep certificate;
@@ -286,12 +292,14 @@ http_error_checks() {
 http_error_checks
 
 check_yum_set_var() {
+    echo "######################## check for releasever hardcoding ########################"
     # check for Version hardcoding
     releasever_file_name=$(grep -r releasever /etc/yum.conf /etc/yum/vars/| awk -F":" '{print $1}')
     releasever=$(grep -r releasever /etc/yum.conf /etc/yum/vars/| awk -F":" '{print $NF}')
     if [ -n "$releasever" ];
     then
-        echo "yum releasever has been set to $releasever in $releasever_file_name "
+        echo "yum releasever has been set to $releasever in $releasever_file_name."
+        echo " This will restrict your instance to stay at same version until releasever config removed from the releasever_file_name"
     fi
 }
 check_yum_set_var
