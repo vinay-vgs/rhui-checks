@@ -291,6 +291,7 @@ http_error_checks() {
         fi
     else
         echo "No errors found in yum repolist output"
+    fi
 }
 http_error_checks
 
