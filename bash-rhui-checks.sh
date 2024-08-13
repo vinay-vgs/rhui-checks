@@ -305,13 +305,13 @@ http_error_checks
 check_yum_set_var() {
     echo -e "\n############################# check for releasever hardcoding ###########################"
     # check for Version hardcoding
-    releasever_file_name=$(grep -r releasever /etc/yum.conf /etc/yum/vars/| awk -F":" '{print $1}')
-    releasever=$(grep -r releasever /etc/yum.conf /etc/yum/vars/| awk -F":" '{print $NF}')
+    releasever_file_name=$(grep -rl '^releasever=' /etc/yum.conf /etc/yum/vars/)
+    releasever=$(grep -oP '^releasever=\K.*' "$releasever_file_name")
     if [ -n "$releasever" ];
     then
         echo "yum releasever has been set to $releasever in $releasever_file_name."
         echo "This will restrict your instance to stay at same version until releasever"
-        echo "config removed from the releasever_file_name"
+        echo "config removed from the $releasever_file_name"
     fi
 }
 check_yum_set_var

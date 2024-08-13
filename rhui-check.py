@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """This script will perform an instance repository check and attempt
-   to fix any issues which prevent the instance from registering to
-   the SUSE update infrastructure """
+   to fix any issues which prevent the instance from installing packages
+   from yum repositories  """
 
 import argparse
 import datetime
