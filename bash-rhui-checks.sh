@@ -289,7 +289,7 @@ http_error_checks() {
     if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'; then
         if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep certificate;
         then
-	    echo -e $BRed"Failed:$Color_Off Found issue in yum output"
+	    echo -e "\n"$BRed"Failed:$Color_Off Found issue in yum output"
             echo "This can happen with an outdated google-rhui-client-rhelX or google-rhui-client-rhelX-sap*"
             echo "(X = RHEL version) package (containing outdated ssl certificates and keys required used"
             echo "to connect to rhui servers)."
@@ -297,7 +297,7 @@ http_error_checks() {
 
         if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep "404 - Not Found";
         then
-	    echo -e $BRed"Failed:$Color_Off Found issue in yum output"
+	    echo -e "\n"$BRed"Failed:$Color_Off Found issue in yum output"
             echo "The errors indicates a content mismatch between what you are asking for and"
             echo "what the RHUI contains. Please retry package install or update at different intervals."
             echo "If issue still persists, Please reachout to GCP Support via a case/chat"
@@ -306,7 +306,7 @@ http_error_checks() {
 
         if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep "403 - Forbidden";
         then
-	    echo -e $BRed"Failed:$Color_Off Found issue in yum output"
+	    echo -e "\n"$BRed"Failed:$Color_Off Found issue in yum output"
             echo "This issue can happen if the installed google-rhui-client is outdated"
             echo "and can be resolved by updating the rhui client package using yum."
             echo -e "  sudo yum update --repo google-compute-engine google-rhui-client-rhel$os_major_version* \n"
@@ -323,7 +323,7 @@ check_yum_set_var() {
     echo -e "\n## check for releasever hardcoding - -- --- ---- ----- ------"
     # check for Version hardcoding
     releasever_file_name=$(grep -rl '^releasever=' /etc/yum.conf /etc/yum/vars/)
-    releasever=$(grep -oP '^releasever=\K.*' "$releasever_file_name")
+    [[ -n $releasever_file_name ]] && releasever=$(grep -oP '^releasever=\K.*' "$releasever_file_name")
     if [ -n "$releasever" ];
     then
         echo -e $BRed"Failed:$Color_Off yum releasever has been set to $releasever in $releasever_file_name."
