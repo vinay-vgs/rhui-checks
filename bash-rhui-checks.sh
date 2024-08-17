@@ -24,6 +24,20 @@
 #                                                                                #
 ##################################################################################
 
+# Reset
+Color_Off='\033[0m'       # Text Reset
+
+# Bold
+BBlack='\033[1;30m'       # Black
+BRed='\033[1;31m'         # Red
+BGreen='\033[1;32m'       # Green
+BYellow='\033[1;33m'      # Yellow
+BBlue='\033[1;34m'        # Blue
+BPurple='\033[1;35m'      # Purple
+BCyan='\033[1;36m'        # Cyan
+BWhite='\033[1;37m'       # White
+
+
 Metadata_URL="http://169.254.169.254"
 
 platform_get() {
@@ -157,7 +171,7 @@ check_metadata_connectivity() {
                     -H "Metadata-Flavor: Google" | grep -q zone; then 
             echo "GCE Metadata connectivity check successful"
         else
-            echo "GCE Metadata connectivity check failed!,\
+            echo -e "$BRed Failed:$Color_Off GCE Metadata connectivity check failed!,\
                      Please check your instance health" 
         fi
     elif [ "$1" == "AWS" ]; then
@@ -165,7 +179,7 @@ check_metadata_connectivity() {
                                      grep -q "region"; then
             echo "AWS Metadata connectivity check successful"
         else
-            echo "AWS Metadata connectivity check failed!"
+            echo "$BRed Failed:$Color_Off AWS Metadata connectivity check failed!"
             echo "Please check your instance health" 
         fi
     elif [ "$1" == "Azure" ]; then
@@ -173,7 +187,7 @@ check_metadata_connectivity() {
                                     -H Metadata:true | grep -q "compute"; then
             echo "Azure Metadata connectivity check successful"
         else
-            echo "Azure Metadata connectivity check failed!,\
+            echo "$BRed Failed:$Color_Off Azure Metadata connectivity check failed!,\
                      Please check your instance health" 
         fi
     else
@@ -204,7 +218,7 @@ check_license() {
                 echo "RHEL-SAP PAYG License $license found. RHUI setup should work as expected"
                 break
             else
-                echo "RHEL PAYG License not found, RHUI will not work on this instance,"
+                echo "$BRed Failed:$Color_Off GCP RHEL PAYG License not found, RHUI will not work on this instance,"
                 echo "unless you have your own RHEL Subscription"
             fi
         done
@@ -275,6 +289,7 @@ http_error_checks() {
     if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'; then
         if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep certificate;
         then
+	    echo -e $BRed"Failed:$Color_Off Found issue in yum output"
             echo "This can happen with an outdated google-rhui-client-rhelX or google-rhui-client-rhelX-sap*"
             echo "(X = RHEL version) package (containing outdated ssl certificates and keys required used"
             echo "to connect to rhui servers)."
@@ -282,6 +297,7 @@ http_error_checks() {
 
         if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep "404 - Not Found";
         then
+	    echo -e $BRed"Failed:$Color_Off Found issue in yum output"
             echo "The errors indicates a content mismatch between what you are asking for and"
             echo "what the RHUI contains. Please retry package install or update at different intervals."
             echo "If issue still persists, Please reachout to GCP Support via a case/chat"
@@ -290,6 +306,7 @@ http_error_checks() {
 
         if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep "403 - Forbidden";
         then
+	    echo -e $BRed"Failed:$Color_Off Found issue in yum output"
             echo "This issue can happen if the installed google-rhui-client is outdated"
             echo "and can be resolved by updating the rhui client package using yum."
             echo -e "  sudo yum update --repo google-compute-engine google-rhui-client-rhel$os_major_version* \n"
@@ -309,7 +326,7 @@ check_yum_set_var() {
     releasever=$(grep -oP '^releasever=\K.*' "$releasever_file_name")
     if [ -n "$releasever" ];
     then
-        echo "yum releasever has been set to $releasever in $releasever_file_name."
+        echo -e $BRed"Failed:$Color_Off yum releasever has been set to $releasever in $releasever_file_name."
         echo "This will restrict your instance to stay at same version until releasever"
         echo "config removed from the $releasever_file_name"
     fi
