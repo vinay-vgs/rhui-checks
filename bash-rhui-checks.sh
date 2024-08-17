@@ -55,7 +55,7 @@ platform_get() {
             platform="Unknown"
         fi
     fi
-    echo "Instance is identified to be running on $platform platform"
+    echo -e $BGreen"Success:$Color_Off Instance is identified to be running on $platform platform"
 }
 platform_get
 
@@ -64,10 +64,10 @@ check_os_version() {
     if cat /etc/redhat-release| grep -q "Red Hat" ; then
         os_version=$(awk -F'=' '$1 == "VERSION_ID" {print $2}' /etc/os-release)
         os_major_version=$(echo "${os_version%%.*}" | tr -d '"')
-        echo "OS is identified as Red Hat Enterprise Linux $os_version"
+        echo -e $BGreen"Success:$Color_Off OS is identified as Red Hat Enterprise Linux $os_version"
     else
         another_os=$(awk -F'=' '$1 == "NAME" {print $2}' /etc/os-release)
-        echo "This script is designed only for Red Hat Enterprise Linux.\
+        echo -e $BRed"Success:$Color_Off This script is designed only for Red Hat Enterprise Linux.\
              Current OS is $another_os, Exiting now!!"
         exit 1
     fi
@@ -169,7 +169,7 @@ check_metadata_connectivity() {
     if [ "$1" == "GCP" ]; then
         if curl -s "$Metadata_URL/computeMetadata/v1/instance/" \
                     -H "Metadata-Flavor: Google" | grep -q zone; then 
-            echo "GCE Metadata connectivity check successful"
+            echo -e $BGreen"Success:$Color_Off GCE Metadata connectivity check successful"
         else
             echo -e "$BRed Failed:$Color_Off GCE Metadata connectivity check failed!,\
                      Please check your instance health" 
@@ -179,7 +179,7 @@ check_metadata_connectivity() {
                                      grep -q "region"; then
             echo "AWS Metadata connectivity check successful"
         else
-            echo "$BRed Failed:$Color_Off AWS Metadata connectivity check failed!"
+            echo -e "$BRed Failed:$Color_Off AWS Metadata connectivity check failed!"
             echo "Please check your instance health" 
         fi
     elif [ "$1" == "Azure" ]; then
@@ -187,7 +187,7 @@ check_metadata_connectivity() {
                                     -H Metadata:true | grep -q "compute"; then
             echo "Azure Metadata connectivity check successful"
         else
-            echo "$BRed Failed:$Color_Off Azure Metadata connectivity check failed!,\
+            echo -e "$BRed Failed:$Color_Off Azure Metadata connectivity check failed!,\
                      Please check your instance health" 
         fi
     else
@@ -212,13 +212,13 @@ check_license() {
             licnese_check $i
             #echo "License $license detected "
             if [[ "$rhel_payg_licenses " =~ " $i " ]]; then
-                echo "RHEL PAYG License $license found. RHUI setup should work as expected"
+                echo -e $BGreen"Success:$Color_Off RHEL PAYG License $license found. RHUI setup should work as expected"
                 break
             elif [[ " $rhel_sap_payg_licenses" =~ " $i " ]]; then
-                echo "RHEL-SAP PAYG License $license found. RHUI setup should work as expected"
+                echo -e $BGreen"Success:$Color_Off RHEL-SAP PAYG License $license found. RHUI setup should work as expected"
                 break
             else
-                echo "$BRed Failed:$Color_Off GCP RHEL PAYG License not found, RHUI will not work on this instance,"
+                echo -e "$BRed Failed:$Color_Off GCP RHEL PAYG License not found, RHUI will not work on this instance,"
                 echo "unless you have your own RHEL Subscription"
             fi
         done
@@ -239,16 +239,16 @@ check_rhui_client() {
     if [ -n "$rhui_client_rpm" ]; then
         rhui_client_rpm=${rhui_client_rpm%.noarch}
         if rpm -qa --changelog google-rhui-client-rhel$os_major_version*| grep -q RHUIv4; then
-            echo "The RHUI client package $rhui_client_rpm"
+            echo -e $BGreen"Success:$Color_Off The installed RHUI client package $rhui_client_rpm is compatible with RHUIv4 Infra"
         else
-            echo -e "Your RHUI client package $rhui_client_rpm is obsolete and not compatible"
-            echo " with latest Redhat Update Infrastructure v4"
-            echo -e "Please plan to upgrade your google-rhui-client-rhel* package to latest one using command:"
-            echo -e "   sudo yum update --repo google-compute-engine google-rhui-client-rhel$os_major_version*"
+            echo -e $BRed"Failed:$Color_Off Your RHUI client package $rhui_client_rpm is obsolete and not compatible"
+            echo -e $BRed"Failed:$Color_Off with latest Redhat Update Infrastructure v4"
+            echo -e $BRed"Failed:$Color_Off Please plan to upgrade your google-rhui-client-rhel* package to latest one using command:"
+            echo -e $BPurple"Fix:$Color_Off    sudo yum update --repo google-compute-engine google-rhui-client-rhel$os_major_version*"
         fi
     else
-        echo "RHUI Client package google-rhui-client-rhel* is missing from the instance."
-        echo "Please install the latest RHUI client package based on your OS and licnese."
+        echo -e $BRed"Failed:$Color_Off RHUI Client package google-rhui-client-rhel* is missing from the instance."
+        echo -e $BRed"Failed:$Color_Off Please install the latest RHUI client package based on your OS and licnese."
     fi
 
 }
@@ -257,11 +257,10 @@ check_rhui_client() {
 check_rhui_v4_baseurls() {
     echo -e "\n## RHUIv4 mirrorURLs endpoint check - -- --- ---- ----- ------"
     if cat /etc/yum.repos.d/rh-cloud.repo | grep -v "^#" | grep -q "cds.rhel.updates.googlecloud.com"; then
-        echo "You are still using RHUIv3 repo endpoints(https://cds.rhel.updates.googlecloud.com),"
-        echo "which are now deprecated."
+        echo -e $BRed"Failed:$Color_Off You are still using deprecated RHUIv3 repo endpoints(https://cds.rhel.updates.googlecloud.com)"
         check_rhui_client
     elif cat /etc/yum.repos.d/rh-cloud.repo | grep -v "^#" | grep -q "rhui.googlecloud.com"; then
-        echo "Your yum repos are configured with correct RHUI endpoints(https://rhui.googlecloud.com)"
+        echo -e $BGreen"Success:$Color_Off Your yum repos are configured with correct RHUI endpoints(https://rhui.googlecloud.com)"
     fi
 }
 check_rhui_v4_baseurls
@@ -270,10 +269,10 @@ rhui_v4_endpoint_connectivity_check() {
     echo -e "\n## RHUIv4 endpoint connectivity check - -- --- ---- ----- ------"
     if curl -s https://rhui.googlecloud.com | grep -q "Red Hat"; 
     then
-        echo "Connectivity to RHUIv4 endpoints(https://rhui.googlecloud.com) is working fine."
+        echo -e $BGreen"Success:$Color_Off Connectivity to RHUIv4 endpoints(https://rhui.googlecloud.com) is working fine."
     else
-        echo "Connectivity to RHUIv4 endpoints(https://rhui.googlecloud.com) is failing."
-        echo "Please work with your Network team to allow communication to https://rhui.googlecloud.com"
+        echo -e $BRed"Failed:$Color_Off Connectivity to RHUIv4 endpoints(https://rhui.googlecloud.com) is failing."
+        echo -e $BRed"Failed:$Color_Off Please work with your Network team to allow communication to https://rhui.googlecloud.com"
     fi
 }
 rhui_v4_endpoint_connectivity_check
@@ -284,37 +283,37 @@ platform_related_repo_checks() {
 
 http_error_checks() {
     echo -e "\n## HTTP error check in yum output - -- --- ---- ----- ------"
-    yum repolist &> /tmp/rhui-temp 
+    yum repolist &> /tmp/rhui-check-temp.txt 
 
-    if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'; then
-        if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep certificate;
+    if cat /tmp/rhui-check-temp.txt | egrep 'HTTPS Error|curl#'; then
+        if cat /tmp/rhui-check-temp.txt | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep certificate;
         then
-	    echo -e "\n"$BRed"Failed:$Color_Off Found issue in yum output"
-            echo "This can happen with an outdated google-rhui-client-rhelX or google-rhui-client-rhelX-sap*"
-            echo "(X = RHEL version) package (containing outdated ssl certificates and keys required used"
-            echo "to connect to rhui servers)."
+	        echo -e "\n\n"$BRed"Failed:$Color_Off Found issue in yum output"
+            echo -e $BRed"Failed:$Color_Off This can happen with an outdated google-rhui-client-rhelX or google-rhui-client-rhelX-sap*"
+            echo -e $BRed"Failed:$Color_Off (X = RHEL version) package (containing outdated ssl certificates and keys required used"
+            echo -e $BRed"Failed:$Color_Off to connect to rhui servers)."
         fi
 
-        if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep "404 - Not Found";
+        if cat /tmp/rhui-check-temp.txt | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep "404 - Not Found";
         then
-	    echo -e "\n"$BRed"Failed:$Color_Off Found issue in yum output"
-            echo "The errors indicates a content mismatch between what you are asking for and"
-            echo "what the RHUI contains. Please retry package install or update at different intervals."
-            echo "If issue still persists, Please reachout to GCP Support via a case/chat"
+	    echo -e "\n\n"$BRed"Failed:$Color_Off Found issue in yum output"
+            echo -e $BRed"Failed:$Color_Off The errors indicates a content mismatch between what you are asking for and"
+            echo -e $BRed"Failed:$Color_Off what the RHUI contains. Please retry package install or update at different intervals."
+            echo -e $BRed"Failed:$Color_Off If issue still persists, Please reachout to GCP Support via a case/chat"
 
         fi
 
-        if cat /tmp/rhui-temp | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep "403 - Forbidden";
+        if cat /tmp/rhui-check-temp.txt | egrep 'HTTPS Error|curl#'| awk -F "HTTPS Error|curl" '{print $NF}'| uniq| grep "403 - Forbidden";
         then
-	    echo -e "\n"$BRed"Failed:$Color_Off Found issue in yum output"
-            echo "This issue can happen if the installed google-rhui-client is outdated"
-            echo "and can be resolved by updating the rhui client package using yum."
-            echo -e "  sudo yum update --repo google-compute-engine google-rhui-client-rhel$os_major_version* \n"
-            echo "If issue still persists after updating the google-rhui-client to latest,"
-            echo "Please reachout to GCP Support via a case/chat"
+	    echo -e "\n\n"$BRed"Failed:$Color_Off Found issue in yum output"
+            echo -e $BRed"Failed:$Color_Off This issue can happen if the installed google-rhui-client is outdated"
+            echo -e $BPurple"Fix:$Color_Off This issue can be resolved by updating the rhui client package using yum."
+            echo -e $BPurple"Fix:$Color_Off   sudo yum update --repo google-compute-engine google-rhui-client-rhel$os_major_version* \n"
+            echo "If issue still persists after updating the google-rhui-client to latest, Please reachout to GCP Support via a case/chat"
         fi
+        /bin/rm /tmp/rhui-check-temp.txt
     else
-        echo "No errors found in yum repolist output"
+        echo -e $BGreen"Success:$Color_Off No errors found in yum repolist output"
     fi
 }
 http_error_checks
@@ -329,6 +328,8 @@ check_yum_set_var() {
         echo -e $BRed"Failed:$Color_Off yum releasever has been set to $releasever in $releasever_file_name."
         echo "This will restrict your instance to stay at same version until releasever"
         echo "config removed from the $releasever_file_name"
+    else
+        echo -e $BGreen"Success:$Color_Off No releaseserver hardcoding found in /etc/yum.conf /etc/yum/vars/"
     fi
 }
 check_yum_set_var
