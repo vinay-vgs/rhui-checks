@@ -325,9 +325,9 @@ check_yum_set_var() {
     [[ -n $releasever_file_name ]] && releasever=$(grep -oP '^releasever=\K.*' "$releasever_file_name")
     if [ -n "$releasever" ];
     then
-        echo -e $BRed"Failed:$Color_Off yum releasever has been set to $releasever in $releasever_file_name."
-        echo "This will restrict your instance to stay at same version until releasever"
-        echo "config removed from the $releasever_file_name"
+        echo -e $BRed"Failed:$Color_Off Yum releasever config is set to $releasever in $releasever_file_name."
+        echo -e $BRed"Failed:$Color_Off This will restrict your instance to stay at same version i.e. RHEL $releasever,"
+        echo -e $BRed"Failed:$Color_Off until releasever config is removed from the $releasever_file_name"
     else
         echo -e $BGreen"Success:$Color_Off No releaseserver hardcoding found in /etc/yum.conf /etc/yum/vars/"
     fi
