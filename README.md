@@ -6,7 +6,7 @@ This repository contains tools to identify, troubleshoot, and automatically fix 
 
 ## Tools Included
 
-* **`rhui-checks.py` (Main Repair Tool):** Python 3 engine that performs deep repository health checks, queries metadata servers, and attempts to automatically repair broken repository configurations and SSL certificate issues.
+* **`rhui-checks.py` (Main Repair Tool (Under development)):** Python 3 engine that performs deep repository health checks, queries metadata servers, and attempts to automatically repair broken repository configurations and SSL certificate issues.Its still under development and contributions are welcomed.
 * **`rhui-checks.sh` (Diagnostic Wrapper):** Lightweight Bash script for quick, color-coded terminal environment checks.
 
 ## Key Features
